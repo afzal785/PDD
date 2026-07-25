@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "netlify-cli": "^26.1.0"
+  },
+  "dependencies": {
+    "expo": "^56.0.12",
+    "react-dom": "19.2.3"
+  }
+}

@@ -1,0 +1,14 @@
+# automation/config/config.yaml
+# All values can be overridden by environment variables.
+# In GitHub Actions, set BASE_URL as a repository secret.
+
+base_url: "${BASE_URL:-https://your-username.github.io/healthtrack/}"
+headless: true
+implicit_wait: 10
+explicit_wait: 20
+retry_count: 3
+screenshot_on_failure: true
+log_level: "INFO"
+browser: "chrome"
+window_width: 1920
+window_height: 1080

@@ -1,0 +1,17 @@
+- [ ] Create folder structure under `automation/`
+- [ ] Add Selenium framework files (pages, tests, utils, config, drivers)
+- [ ] Write sample Page Object Model classes
+- [ ] Write sample pytest tests using Selenium
+- [ ] Add configuration for BASE_URL
+- [ ] Implement test data management
+- [ ] Implement retry and explicit wait utilities
+- [ ] Add screenshot and logging utilities
+- [ ] Create test generator script to produce 400+ test cases
+- [ ] Create Excel report generator script
+- [ ] Add HTML report generation (pytest-html)
+- [ ] Create GitHub Actions workflow `.github/workflows/deploy-and-test.yml`
+- [ ] Add npm/netlify deployment script (if needed)
+- [ ] Verify deployment via curl/requests
+- [ ] Publish GitHub Action summary
+- [ ] Upload artifacts (Excel, HTML, screenshots, logs, JSON)
+- [ ] Document usage guide
