@@ -1,0 +1,4 @@
+[build]
+  base = "healthtrack-rn"
+  command = "npx expo export -p web"
+  publish = "healthtrack-rn/dist"
