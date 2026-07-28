@@ -37,6 +37,8 @@ jobs:
           python generate_vulnerability_400_excel.py
           python generate_selenium_400_excel.py
           python generate_appium_400_excel.py
+          python generate_unit_testing_400_excel.py
+          python generate_validation_testing_400_excel.py
 
       - name: Wait for Ports to be Ready
         run: |
@@ -54,6 +56,10 @@ jobs:
         with:
           name: e2e-test-reports
           path: |
+            Unit_Testing_400_Test_Cases.xlsx
+            Unit_Test_Cases_400.xlsx
+            Validation_Testing_400_Test_Cases.xlsx
+            Validation_Test_Cases_400.xlsx
             Test_Report.xlsx
             CI_CD_Automation_Test_Report.xlsx
             Appium_Mobile_400_Test_Cases.xlsx

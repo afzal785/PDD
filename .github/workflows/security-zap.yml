@@ -31,6 +31,8 @@ jobs:
         python generate_vulnerability_400_excel.py
         python generate_selenium_400_excel.py
         python generate_appium_400_excel.py
+        python generate_unit_testing_400_excel.py
+        python generate_validation_testing_400_excel.py
 
     - name: Start Local Web Server
       run: |
@@ -79,6 +81,10 @@ jobs:
         name: owasp-zap-and-excel-reports
         path: |
           zap-reports/zap_report.html
+          Unit_Testing_400_Test_Cases.xlsx
+          Unit_Test_Cases_400.xlsx
+          Validation_Testing_400_Test_Cases.xlsx
+          Validation_Test_Cases_400.xlsx
           Appium_Mobile_400_Test_Cases.xlsx
           Load_Testing_400_Test_Cases.xlsx
           E2E_Selenium_Test_Report_400.xlsx
