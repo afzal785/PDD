@@ -1579,7 +1579,10 @@ function logMood(mood) {
 // ─── MEDICATIONS ──────────────────────────────────────────────────────────────
 function renderMedications(el) {
   el.innerHTML = `
-    <button class="btn-add-med" onclick="openAddMedicine()">+ Add New Medication</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+      <button class="btn-add-med" onclick="openAddMedicine()">+ Add New Medication</button>
+      <button class="btn-add-med" style="background:var(--accent);color:#fff;" onclick="testMobileNotification()">🔔 Test Phone Home Screen Notification</button>
+    </div>
     <div class="section-title">${state.medicines.length} Medications Configured</div>
     ${state.medicines.length === 0 ? `<div class="empty-state">
       <div class="empty-icon">💊</div>
@@ -1600,12 +1603,13 @@ function renderMedCard(med) {
         ? `<span class="badge badge-green">✓ Taken</span>`
         : `<span class="badge badge-red">✗ Missed</span>`)
     : `<span class="badge badge-yellow">⏳ Pending</span>`;
+  const medDateStr = med.date || (med.created_at ? new Date(med.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }));
 
   return `<div class="med-card">
     <div class="med-icon-box">${med.type==='Pill'?'💊':med.type==='Tablet'?'🔵':med.type==='Capsule'?'🟡':med.type==='Liquid'?'💧':'💉'}</div>
     <div class="med-info">
       <div class="med-name">${med.name}</div>
-      <div class="med-dosage">${med.dosage} · ${med.type} · ${statusBadge}</div>
+      <div class="med-dosage">${med.dosage} · ${med.type} · 📅 Date: ${medDateStr} · ${statusBadge}</div>
       <div class="med-time">⏰ ${med.reminder_time} (${med.period})</div>
       <div class="stock-bar-wrap">
         <div class="stock-bar-bg"><div class="stock-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
@@ -2198,18 +2202,37 @@ function triggerMedicineAlert(med) {
   // 1. Play Audio Chime Sound
   playAlarmSound();
 
-  // 2. Desktop Push Notification
+  // 2. Mobile & Desktop Push Notification (ServiceWorker showNotification required on Android/iOS phones)
   if ("Notification" in window && Notification.permission === "granted") {
     try {
-      const n = new Notification(`⏰ Medicine Reminder: ${med.name}`, {
-        body: `It is time to take ${med.name} (${med.dosage || ''}). Instructions: ${med.instructions || med.inst || 'Take as prescribed.'}`,
-        icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
-        requireInteraction: true,
-      });
-      n.onclick = () => {
-        window.focus();
-        showAlarmModal(med);
-      };
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then((reg) => {
+          reg.showNotification(`⏰ Medicine Reminder: ${med.name}`, {
+            body: `It is time to take ${med.name} (${med.dosage || ''}). Instructions: ${med.instructions || med.inst || 'Take as prescribed.'}`,
+            icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+            badge: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+            vibrate: [300, 100, 300, 100, 300],
+            requireInteraction: true,
+            tag: `med-reminder-${med.id}`,
+          });
+        }).catch(() => {
+          new Notification(`⏰ Medicine Reminder: ${med.name}`, {
+            body: `It is time to take ${med.name} (${med.dosage || ''}). Instructions: ${med.instructions || med.inst || 'Take as prescribed.'}`,
+            icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+            requireInteraction: true,
+          });
+        });
+      } else {
+        const n = new Notification(`⏰ Medicine Reminder: ${med.name}`, {
+          body: `It is time to take ${med.name} (${med.dosage || ''}). Instructions: ${med.instructions || med.inst || 'Take as prescribed.'}`,
+          icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+          requireInteraction: true,
+        });
+        n.onclick = () => {
+          window.focus();
+          showAlarmModal(med);
+        };
+      }
     } catch (e) { console.warn('Push error:', e); }
   } else if ("Notification" in window && Notification.permission === "default") {
     Notification.requestPermission();
@@ -2259,6 +2282,44 @@ function checkMedicineReminders() {
         triggerMedicineAlert(med);
       }
     });
+  }
+}
+
+function testMobileNotification() {
+  if (typeof window !== 'undefined' && 'Notification' in window) {
+    Notification.requestPermission().then(perm => {
+      if (perm === 'granted') {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification('⏰ Medication Reminder Alarm', {
+              body: 'It is time to take your scheduled medication dose.',
+              icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+              badge: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+              vibrate: [300, 100, 300, 100, 300],
+              requireInteraction: true,
+              tag: 'medication-alarm-test-' + Date.now(),
+            });
+          }).catch(() => {
+            new Notification('⏰ Medication Reminder Alarm', {
+              body: 'It is time to take your scheduled medication dose.',
+              icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+              requireInteraction: true,
+            });
+          });
+        } else {
+          new Notification('⏰ Medication Reminder Alarm', {
+            body: 'It is time to take your scheduled medication dose.',
+            icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+            requireInteraction: true,
+          });
+        }
+        showToast('🔔 Home screen notification sent to your phone!');
+      } else {
+        alert('Please allow notification permissions in your browser or phone settings to receive reminder alerts.');
+      }
+    });
+  } else {
+    alert('Notifications are not supported on this browser/device.');
   }
 }
 

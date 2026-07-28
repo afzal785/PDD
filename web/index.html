@@ -2198,18 +2198,37 @@ function triggerMedicineAlert(med) {
   // 1. Play Audio Chime Sound
   playAlarmSound();
 
-  // 2. Desktop Push Notification
+  // 2. Mobile & Desktop Push Notification (ServiceWorker showNotification required on Android/iOS phones)
   if ("Notification" in window && Notification.permission === "granted") {
     try {
-      const n = new Notification(`⏰ Medicine Reminder: ${med.name}`, {
-        body: `It is time to take ${med.name} (${med.dosage || ''}). Instructions: ${med.instructions || med.inst || 'Take as prescribed.'}`,
-        icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
-        requireInteraction: true,
-      });
-      n.onclick = () => {
-        window.focus();
-        showAlarmModal(med);
-      };
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then((reg) => {
+          reg.showNotification(`⏰ Medicine Reminder: ${med.name}`, {
+            body: `It is time to take ${med.name} (${med.dosage || ''}). Instructions: ${med.instructions || med.inst || 'Take as prescribed.'}`,
+            icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+            badge: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+            vibrate: [300, 100, 300, 100, 300],
+            requireInteraction: true,
+            tag: `med-reminder-${med.id}`,
+          });
+        }).catch(() => {
+          new Notification(`⏰ Medicine Reminder: ${med.name}`, {
+            body: `It is time to take ${med.name} (${med.dosage || ''}). Instructions: ${med.instructions || med.inst || 'Take as prescribed.'}`,
+            icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+            requireInteraction: true,
+          });
+        });
+      } else {
+        const n = new Notification(`⏰ Medicine Reminder: ${med.name}`, {
+          body: `It is time to take ${med.name} (${med.dosage || ''}). Instructions: ${med.instructions || med.inst || 'Take as prescribed.'}`,
+          icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+          requireInteraction: true,
+        });
+        n.onclick = () => {
+          window.focus();
+          showAlarmModal(med);
+        };
+      }
     } catch (e) { console.warn('Push error:', e); }
   } else if ("Notification" in window && Notification.permission === "default") {
     Notification.requestPermission();
@@ -2259,6 +2278,44 @@ function checkMedicineReminders() {
         triggerMedicineAlert(med);
       }
     });
+  }
+}
+
+function testMobileNotification() {
+  if (typeof window !== 'undefined' && 'Notification' in window) {
+    Notification.requestPermission().then(perm => {
+      if (perm === 'granted') {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification('⏰ Medication Reminder Alarm', {
+              body: 'It is time to take your scheduled medication dose.',
+              icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+              badge: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+              vibrate: [300, 100, 300, 100, 300],
+              requireInteraction: true,
+              tag: 'medication-alarm-test-' + Date.now(),
+            });
+          }).catch(() => {
+            new Notification('⏰ Medication Reminder Alarm', {
+              body: 'It is time to take your scheduled medication dose.',
+              icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+              requireInteraction: true,
+            });
+          });
+        } else {
+          new Notification('⏰ Medication Reminder Alarm', {
+            body: 'It is time to take your scheduled medication dose.',
+            icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+            requireInteraction: true,
+          });
+        }
+        showToast('🔔 Home screen notification sent to your phone!');
+      } else {
+        alert('Please allow notification permissions in your browser or phone settings to receive reminder alerts.');
+      }
+    });
+  } else {
+    alert('Notifications are not supported on this browser/device.');
   }
 }
 

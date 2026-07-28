@@ -122,6 +122,52 @@ export default function MedicationsScreen({
     return matchSearch && matchPeriod;
   });
 
+  const testPhoneNotification = async () => {
+    try {
+      if (typeof window !== 'undefined' && 'Notification' in window) {
+        if ('serviceWorker' in navigator) {
+          try {
+            const reg = await navigator.serviceWorker.ready;
+            await reg.showNotification('⏰ Medication Reminder Alarm', {
+              body: 'It is time to take your scheduled medication dose.',
+              icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+              badge: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+              vibrate: [300, 100, 300, 100, 300],
+              requireInteraction: true,
+              tag: 'medication-alarm-test-' + Date.now(),
+            });
+          } catch (e) {
+            new Notification('⏰ Medication Reminder Alarm', {
+              body: 'It is time to take your scheduled medication dose.',
+              icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+              requireInteraction: true,
+            });
+          }
+        } else {
+          new Notification('⏰ Medication Reminder Alarm', {
+            body: 'It is time to take your scheduled medication dose.',
+            icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+            requireInteraction: true,
+          });
+        }
+      } else {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: '⏰ Medication Reminder Alarm',
+            body: 'It is time to take your scheduled medication dose.',
+            sound: 'default',
+            priority: Notifications.AndroidNotificationPriority.MAX,
+            vibrate: [0, 250, 250, 250],
+          },
+          trigger: null,
+        });
+      }
+      Alert.alert('🔔 Success', 'Home screen notification sent to your phone!');
+    } catch (err) {
+      Alert.alert('Notification Notice', 'Please allow notification permissions in your phone or browser settings.');
+    }
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
       {/* Search Bar */}
@@ -133,6 +179,12 @@ export default function MedicationsScreen({
           value={search}
           onChangeText={setSearch}
         />
+        <TouchableOpacity
+          style={[styles.testNotifBtn, { backgroundColor: c.primary + '15', borderColor: c.primary, borderWidth: 1, marginTop: 10, padding: 12, borderRadius: 12, alignItems: 'center' }]}
+          onPress={testPhoneNotification}
+        >
+          <Text style={{ color: c.primary, fontWeight: '700', fontSize: 13 }}>🔔 Test Phone Home Screen Notification</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Period Filtering Tabs */}
@@ -163,6 +215,7 @@ export default function MedicationsScreen({
         ) : (
           filteredMeds.map((med) => {
             const isLowStock = med.remaining_quantity <= 5;
+            const medDateStr = med.date || (med.created_at ? new Date(med.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }));
             return (
               <View
                 key={med.id}
@@ -172,7 +225,7 @@ export default function MedicationsScreen({
                   <View>
                     <Text style={[styles.medName, { color: c.text }]}>{med.name}</Text>
                     <Text style={[styles.medDetails, { color: c.textMuted }]}>
-                      {med.dosage}  •  {med.type}
+                      {med.dosage}  •  {med.type}  •  📅 Date: {medDateStr}
                     </Text>
                   </View>
                   <View style={styles.timeBadge}>
