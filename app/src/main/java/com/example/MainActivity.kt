@@ -233,38 +233,6 @@ fun MainContainerScreen(viewModel: HealthViewModel) {
                             modifier = Modifier.size(18.dp)
                         )
                     }
-
-                    // Rose-colored urgent SOS minimalist pill button
-                    Box(
-                        modifier = Modifier
-                            .height(38.dp)
-                            .clip(CircleShape)
-                            .background(
-                                color = if (isDark) Color(0xFF3B121E) else Color(0xFFFFF1F2)
-                            )
-                            .border(
-                                width = 1.dp,
-                                color = if (isDark) Color(0xFFF43F5E).copy(alpha = 0.3f) else Color(0xFFFFD1D7),
-                                shape = CircleShape
-                            )
-                            .clickable {
-                                triggerSystemAlert(context, durationMs = 800, playSound = true)
-                                showEmergencyModal = true
-                            }
-                            .padding(horizontal = 16.dp)
-                            .testTag("sos_quick_button"),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "SOS",
-                            color = Color(0xFFE11D48),
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                fontWeight = FontWeight.Black,
-                                letterSpacing = 0.5.sp,
-                                fontFamily = FontFamily.SansSerif
-                            )
-                        )
-                    }
                 }
             }
         },
