@@ -1999,20 +1999,35 @@ function renderSettings(el) {
     </div>
 
     <div class="card">
-      <div class="section-title">Developer API Settings</div>
-      <div style="margin-bottom: 12px;">
-        <label style="margin-top:4px; margin-bottom:2px;">Supabase Project URL</label>
-        <input type="text" id="set-sb-url" class="select-input" style="height: 38px; font-size: 13px;" placeholder="https://your-project.supabase.co" />
+      <div class="section-title">Health & Notification Preferences</div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Dosage Reminders</div>
+          <div class="setting-desc">Push & In-App notifications</div>
+        </div>
+        <span class="badge badge-green">Enabled</span>
       </div>
-      <div style="margin-bottom: 12px;">
-        <label style="margin-top:4px; margin-bottom:2px;">Supabase Anon Key</label>
-        <input type="password" id="set-sb-key" class="select-input" style="height: 38px; font-size: 13px;" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." />
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Measurement Units</div>
+          <div class="setting-desc">Biometric vital unit standards</div>
+        </div>
+        <span class="badge badge-blue">Metric (kg, mL)</span>
       </div>
-      <div style="margin-bottom: 12px;">
-        <label style="margin-top:4px; margin-bottom:2px;">Gemini API Key</label>
-        <input type="password" id="set-gemini-key" class="select-input" style="height: 38px; font-size: 13px;" placeholder="AIzaSy..." />
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">AI Health Assistant</div>
+          <div class="setting-desc">Gemini health recommendations</div>
+        </div>
+        <span class="badge badge-green">Active</span>
       </div>
-      <button class="btn btn-outline" style="height: 38px; font-size: 14px; margin-top: 8px; width: 100%; border: 2px solid var(--primary); color: var(--primary);" onclick="saveDevKeys()">Save Configuration & Reload</button>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">SOS Emergency Alert Delay</div>
+          <div class="setting-desc">Countdown before calling</div>
+        </div>
+        <span class="badge badge-blue">3 Seconds</span>
+      </div>
     </div>
 
     <div class="card">
