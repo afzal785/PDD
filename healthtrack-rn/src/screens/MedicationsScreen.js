@@ -85,7 +85,29 @@ export default function MedicationsScreen({
     if (notificationTimers.current[med.id]) {
       clearTimeout(notificationTimers.current[med.id]);
     }
-    notificationTimers.current[med.id] = setTimeout(() => {
+    notificationTimers.current[med.id] = setTimeout(async () => {
+      if (typeof window !== 'undefined' && 'Notification' in window) {
+        try {
+          if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate([500, 250, 500, 250, 500]);
+          const perm = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+          if (perm === 'granted') {
+            const notifTitle = '⏰ Medication Reminder';
+            const notifBody = `Time to take ${med.name} (${med.dosage || ''}). ${med.instructions || ''}`;
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.register('./sw.js').then(reg => {
+                reg.showNotification(notifTitle, {
+                  body: notifBody,
+                  icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+                  vibrate: [500, 250, 500],
+                  requireInteraction: true
+                });
+              }).catch(() => new Notification(notifTitle, { body: notifBody }));
+            } else {
+              new Notification(notifTitle, { body: notifBody });
+            }
+          }
+        } catch (e) { console.log('notif err', e); }
+      }
       Alert.alert(
         '⏰ MEDICATION REMINDER',
         `Time to take your medication: ${med.name} (${med.dosage || ''})\n${med.instructions ? 'Instructions: ' + med.instructions : ''}`,
@@ -125,18 +147,28 @@ export default function MedicationsScreen({
   const testPhoneNotification = async () => {
     try {
       if (typeof window !== 'undefined' && 'Notification' in window) {
-        if ('serviceWorker' in navigator) {
-          try {
-            const reg = await navigator.serviceWorker.ready;
-            await reg.showNotification('⏰ Medication Reminder Alarm', {
-              body: 'It is time to take your scheduled medication dose.',
-              icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
-              badge: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
-              vibrate: [300, 100, 300, 100, 300],
-              requireInteraction: true,
-              tag: 'medication-alarm-test-' + Date.now(),
-            });
-          } catch (e) {
+        if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate([300, 100, 300, 100, 300]);
+        const perm = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+        if (perm === 'granted') {
+          if ('serviceWorker' in navigator) {
+            try {
+              const reg = await navigator.serviceWorker.register('./sw.js');
+              await reg.showNotification('⏰ Medication Reminder Alarm', {
+                body: 'It is time to take your scheduled medication dose.',
+                icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+                badge: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+                vibrate: [300, 100, 300, 100, 300],
+                requireInteraction: true,
+                tag: 'medication-alarm-test-' + Date.now(),
+              });
+            } catch (e) {
+              new Notification('⏰ Medication Reminder Alarm', {
+                body: 'It is time to take your scheduled medication dose.',
+                icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
+                requireInteraction: true,
+              });
+            }
+          } else {
             new Notification('⏰ Medication Reminder Alarm', {
               body: 'It is time to take your scheduled medication dose.',
               icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
@@ -144,11 +176,8 @@ export default function MedicationsScreen({
             });
           }
         } else {
-          new Notification('⏰ Medication Reminder Alarm', {
-            body: 'It is time to take your scheduled medication dose.',
-            icon: 'https://cdn-icons-png.flaticon.com/512/883/883407.png',
-            requireInteraction: true,
-          });
+          Alert.alert('Permission Needed', 'Please allow Notification permissions in your browser or phone settings.');
+          return;
         }
       } else {
         await Notifications.scheduleNotificationAsync({
@@ -215,7 +244,14 @@ export default function MedicationsScreen({
         ) : (
           filteredMeds.map((med) => {
             const isLowStock = med.remaining_quantity <= 5;
-            const medDateStr = med.date || (med.created_at ? new Date(med.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }));
+            let extractedDate = med.date;
+            let cleanInstructions = med.instructions || '';
+            if (cleanInstructions.startsWith('[Date: ')) {
+              const match = cleanInstructions.match(/^\[Date:\s*([^\]]+)\]/);
+              if (match) extractedDate = match[1];
+              cleanInstructions = cleanInstructions.replace(/^\[Date:\s*[^\]]+\]\s*/, '');
+            }
+            const medDateStr = extractedDate || (med.created_at ? new Date(med.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }));
             return (
               <View
                 key={med.id}
@@ -234,9 +270,9 @@ export default function MedicationsScreen({
                   </View>
                 </View>
 
-                {med.instructions ? (
+                {cleanInstructions ? (
                   <Text style={[styles.medInst, { color: c.textMuted }]}>
-                    📝 {med.instructions}
+                    📝 {cleanInstructions}
                   </Text>
                 ) : null}
 

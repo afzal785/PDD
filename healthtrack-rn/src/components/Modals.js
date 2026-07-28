@@ -75,6 +75,7 @@ export const AddMedicineModal = ({ visible, medicine, onDismiss, onSave, isDark 
   const [period, setPeriod] = useState('Morning');
   const [qty, setQty] = useState('30');
   const [instructions, setInstructions] = useState('Take with breakfast');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
     if (medicine) {
@@ -85,7 +86,18 @@ export const AddMedicineModal = ({ visible, medicine, onDismiss, onSave, isDark 
       setReminderTime(medicine.reminder_time || '08:00');
       setPeriod(medicine.period || 'Morning');
       setQty(String(medicine.remaining_quantity || 30));
-      setInstructions(medicine.instructions || '');
+
+      let extractedDate = medicine.date || '';
+      let cleanInst = medicine.instructions || '';
+      if (cleanInst.startsWith('[Date: ')) {
+        const m = cleanInst.match(/^\[Date:\s*([^\]]+)\]/);
+        if (m) {
+          extractedDate = m[1];
+          cleanInst = cleanInst.replace(/^\[Date:\s*[^\]]+\]\s*/, '');
+        }
+      }
+      setInstructions(cleanInst);
+      setDate(extractedDate || medicine.date_created || new Date().toISOString().split('T')[0]);
     } else {
       setName('');
       setDosage('10mg');
@@ -95,11 +107,14 @@ export const AddMedicineModal = ({ visible, medicine, onDismiss, onSave, isDark 
       setPeriod('Morning');
       setQty('30');
       setInstructions('Take with breakfast');
+      setDate(new Date().toISOString().split('T')[0]);
     }
   }, [medicine, visible]);
 
   const handleSave = () => {
     if (!name.trim()) return;
+    const cleanInstructions = instructions ? instructions.replace(/^\[Date:\s*[^\]]+\]\s*/, '') : '';
+    const dateStr = date || new Date().toISOString().split('T')[0];
     onSave({
       name,
       dosage,
@@ -108,7 +123,7 @@ export const AddMedicineModal = ({ visible, medicine, onDismiss, onSave, isDark 
       reminder_time: reminderTime,
       period,
       remaining_quantity: parseInt(qty, 10) || 0,
-      instructions,
+      instructions: `[Date: ${dateStr}] ` + cleanInstructions,
     });
   };
 
@@ -288,6 +303,15 @@ export const AddMedicineModal = ({ visible, medicine, onDismiss, onSave, isDark 
                 </TouchableOpacity>
               ))}
             </View>
+
+            <Text style={[styles.inputLabel, { color: c.textMuted }]}>Prescribed / Start Date (YYYY-MM-DD)</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: c.inputBg, color: c.text, borderColor: c.border }]}
+              value={date}
+              onChangeText={setDate}
+              placeholder="e.g. 2026-07-28"
+              placeholderTextColor={c.textMuted}
+            />
 
             <Text style={[styles.inputLabel, { color: c.textMuted }]}>Intake Instructions</Text>
             <TextInput
