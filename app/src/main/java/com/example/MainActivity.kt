@@ -2666,7 +2666,7 @@ fun AddMedicineDialog(
     var name by remember { mutableStateOf("") }
     var dosage by remember { mutableStateOf("10mg") }
     var type by remember { mutableStateOf("Pill") } // Dropdown choices
-    var frequency by remember { mutableStateOf("Daily") }
+    var date by remember { mutableStateOf("2026-07-29") }
     var reminderTime by remember { mutableStateOf("08:00") }
     var period by remember { mutableStateOf("Morning") }
     var qtyStr by remember { mutableStateOf("30") }
@@ -2722,9 +2722,9 @@ fun AddMedicineDialog(
 
                 Row {
                     OutlinedTextField(
-                        value = frequency,
-                        onValueChange = { frequency = it },
-                        label = { Text("Frequency") },
+                        value = date,
+                        onValueChange = { date = it },
+                        label = { Text("Date (YYYY-MM-DD)") },
                         modifier = Modifier.weight(1f)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -2769,7 +2769,7 @@ fun AddMedicineDialog(
                 Button(
                     onClick = {
                         val qty = qtyStr.toIntOrNull() ?: 30
-                        onAdd(name, dosage, type, frequency, reminderTime, period, qty, instructions)
+                        onAdd(name, dosage, type, "Daily", reminderTime, period, qty, "[Date: $date] $instructions")
                     },
                     enabled = name.isNotBlank(),
                     modifier = Modifier.fillMaxWidth().testTag("add_medicine_confirm")

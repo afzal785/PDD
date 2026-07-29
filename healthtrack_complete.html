@@ -40,12 +40,13 @@
 <header>HealthTrack Dashboard</header>
 <main>
   <section class="card" id="medications-card">
-    <h2>Medicines</h2>
+    <h2>New Medicine Configuration</h2>
     <ul class="list" id="med-list"></ul>
     <hr/>
     <form class="form" id="add-med-form">
       <input type="text" id="med-name" placeholder="Medicine name" required />
       <input type="text" id="med-dosage" placeholder="Dosage (e.g., 10mg)" required />
+      <input type="date" id="med-date" required />
       <input type="time" id="med-time" placeholder="Reminder time" required />
       <button type="submit">Add Medicine</button>
     </form>
@@ -97,7 +98,7 @@ function renderMeds(){
   medListEl.innerHTML='';
   meds.forEach((m,i)=>{
     const li=document.createElement('li');
-    li.textContent=`${m.name} – ${m.dosage} – ${m.time}`;
+    li.textContent=`${m.name} – ${m.dosage} – Date: ${m.date || '2026-07-29'} – ${m.time}`;
     const del=document.createElement('button');
     del.textContent='✕';
     del.style.background='transparent';
@@ -114,9 +115,10 @@ document.getElementById('add-med-form').onsubmit=e=>{
   e.preventDefault();
   const name=document.getElementById('med-name').value.trim();
   const dosage=document.getElementById('med-dosage').value.trim();
+  const date=document.getElementById('med-date') ? document.getElementById('med-date').value : new Date().toISOString().split('T')[0];
   const time=document.getElementById('med-time').value;
   if(name && dosage && time){
-    meds.push({name,dosage,time});
+    meds.push({name,dosage,date,time});
     store('meds',meds);
     renderMeds();
     renderSchedule();

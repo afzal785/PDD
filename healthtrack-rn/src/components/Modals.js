@@ -70,7 +70,6 @@ export const AddMedicineModal = ({ visible, medicine, onDismiss, onSave, isDark 
   const [name, setName] = useState('');
   const [dosage, setDosage] = useState('10mg');
   const [type, setType] = useState('Pill');
-  const [frequency, setFrequency] = useState('Daily');
   const [reminderTime, setReminderTime] = useState('08:00');
   const [period, setPeriod] = useState('Morning');
   const [qty, setQty] = useState('30');
@@ -82,7 +81,6 @@ export const AddMedicineModal = ({ visible, medicine, onDismiss, onSave, isDark 
       setName(medicine.name || '');
       setDosage(medicine.dosage || '10mg');
       setType(medicine.type || 'Pill');
-      setFrequency(medicine.frequency || 'Daily');
       setReminderTime(medicine.reminder_time || '08:00');
       setPeriod(medicine.period || 'Morning');
       setQty(String(medicine.remaining_quantity || 30));
@@ -102,7 +100,6 @@ export const AddMedicineModal = ({ visible, medicine, onDismiss, onSave, isDark 
       setName('');
       setDosage('10mg');
       setType('Pill');
-      setFrequency('Daily');
       setReminderTime('08:00');
       setPeriod('Morning');
       setQty('30');
@@ -119,7 +116,7 @@ export const AddMedicineModal = ({ visible, medicine, onDismiss, onSave, isDark 
       name,
       dosage,
       type,
-      frequency,
+      frequency: 'Daily',
       reminder_time: reminderTime,
       period,
       remaining_quantity: parseInt(qty, 10) || 0,
@@ -205,15 +202,36 @@ export const AddMedicineModal = ({ visible, medicine, onDismiss, onSave, isDark 
               })}
             </View>
 
-            {/* Row 3: Frequency (full width!) */}
-            <Text style={[styles.inputLabel, { color: c.textMuted }]}>Frequency</Text>
-            <TextInput
-              style={[styles.input, { backgroundColor: c.inputBg, color: c.text, borderColor: c.border }]}
-              value={frequency}
-              onChangeText={setFrequency}
-              placeholder="e.g. Daily"
-              placeholderTextColor={c.textMuted}
-            />
+            {/* Row 3: Date (full width!) */}
+            <Text style={[styles.inputLabel, { color: c.textMuted }]}>Date (YYYY-MM-DD)</Text>
+            {Platform.OS === 'web' ? (
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                style={{
+                  width: '100%',
+                  height: 48,
+                  backgroundColor: c.inputBg,
+                  color: c.text,
+                  border: `1px solid ${c.border}`,
+                  borderRadius: 12,
+                  padding: '0 14px',
+                  fontSize: 15,
+                  fontFamily: 'inherit',
+                  outline: 'none',
+                  marginBottom: 8,
+                }}
+              />
+            ) : (
+              <TextInput
+                style={[styles.input, { backgroundColor: c.inputBg, color: c.text, borderColor: c.border }]}
+                value={date}
+                onChangeText={setDate}
+                placeholder="e.g. 2026-07-29"
+                placeholderTextColor={c.textMuted}
+              />
+            )}
 
             {/* Touch Period Duty Selection */}
             <Text style={[styles.inputLabel, { color: c.textMuted, marginTop: 12 }]}>Touch Period Duty (Tap to select)</Text>
@@ -303,15 +321,6 @@ export const AddMedicineModal = ({ visible, medicine, onDismiss, onSave, isDark 
                 </TouchableOpacity>
               ))}
             </View>
-
-            <Text style={[styles.inputLabel, { color: c.textMuted }]}>Prescribed / Start Date (YYYY-MM-DD)</Text>
-            <TextInput
-              style={[styles.input, { backgroundColor: c.inputBg, color: c.text, borderColor: c.border }]}
-              value={date}
-              onChangeText={setDate}
-              placeholder="e.g. 2026-07-28"
-              placeholderTextColor={c.textMuted}
-            />
 
             <Text style={[styles.inputLabel, { color: c.textMuted }]}>Intake Instructions</Text>
             <TextInput

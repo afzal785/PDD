@@ -353,11 +353,13 @@
 <!-- Add Medicine Modal -->
 <div class="modal-overlay" id="med-modal">
   <div class="modal">
-    <div class="modal-title" id="med-modal-title">Add New Medication</div>
+    <div class="modal-title" id="med-modal-title">New Medicine Configuration</div>
     <label>Medication Name *</label>
     <input type="text" id="m-name" placeholder="e.g. Lisinopril" />
     <label>Dosage *</label>
     <input type="text" id="m-dosage" placeholder="e.g. 10mg" />
+    <label>Date (YYYY-MM-DD)</label>
+    <input type="date" id="m-date" style="width: 100%; height: 46px; background: var(--input-bg); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0 14px; font-size: 14px; margin-bottom: 12px;" />
     <div class="form-row">
       <div><label>Type</label><select class="input-sel" id="m-type"><option>Pill</option><option>Tablet</option><option>Capsule</option><option>Liquid</option><option>Injection</option></select></div>
       <div><label>Period</label><select class="input-sel" id="m-period"><option>Morning</option><option>Afternoon</option><option>Evening</option><option>Night</option></select></div>
@@ -734,8 +736,9 @@ function deleteMed(id) {
 
 function openAddMed() {
   state.editingMedId = null;
-  document.getElementById('med-modal-title').textContent = 'Add New Medication';
+  document.getElementById('med-modal-title').textContent = 'New Medicine Configuration';
   ['m-name','m-dosage','m-time','m-inst'].forEach(i => document.getElementById(i).value = '');
+  if (document.getElementById('m-date')) document.getElementById('m-date').value = new Date().toISOString().split('T')[0];
   document.getElementById('m-qty').value = 30;
   document.getElementById('m-modal').classList.add('open');
 }
@@ -747,6 +750,7 @@ function openEditMed(id) {
   document.getElementById('med-modal-title').textContent = 'Edit Medication';
   document.getElementById('m-name').value = med.name;
   document.getElementById('m-dosage').value = med.dosage;
+  if (document.getElementById('m-date')) document.getElementById('m-date').value = med.date || new Date().toISOString().split('T')[0];
   document.getElementById('m-time').value = med.time;
   document.getElementById('m-qty').value = med.qty;
   document.getElementById('m-type').value = med.type;
@@ -761,6 +765,7 @@ function saveMedicine() {
   const med = {
     name, dosage: document.getElementById('m-dosage').value.trim(),
     type: document.getElementById('m-type').value,
+    date: document.getElementById('m-date') ? document.getElementById('m-date').value : new Date().toISOString().split('T')[0],
     period: document.getElementById('m-period').value,
     time: document.getElementById('m-time').value || '08:00',
     qty: parseInt(document.getElementById('m-qty').value) || 30,
